@@ -1,0 +1,5 @@
+node_modules/
+monitor/monitor.log
+state/state.json
+*.tmp
+.DS_Store

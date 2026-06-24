@@ -1,0 +1,23 @@
+[Variables]
+; ===== Theme: Terminal (green-on-black, monospace) =====
+BgColor=2,8,4,235
+PanelColor=6,16,8,245
+StrokeColor=20,70,30,255
+TextColor=130,255,150,255
+DimColor=70,150,90,255
+AccentColor=120,255,140,255
+HPColorNormal=60,255,90,255
+HPColorWarning=220,230,60,255
+HPColorCritical=255,80,80,255
+MPColor=60,220,150,255
+BarBgColor=12,34,16,255
+StatNormal=60,255,90,255
+StatWarning=220,230,60,255
+StatCritical=255,80,80,255
+StatUnknown=255,170,60,255
+FontFace=Consolas
+FontFaceMono=Consolas
+FontHeader=20
+FontLabel=13
+FontValue=15
+FontSmall=11

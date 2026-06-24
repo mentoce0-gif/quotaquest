@@ -1,0 +1,54 @@
+{
+  "plan": "max20x",
+  "intervalSeconds": 30,
+  "statePath": "../state/state.json",
+  "logPath": "./monitor.log",
+  "_comment": "Caps are editable. Token caps are approximate and meant to be calibrated to your own plan. Set 'unit' to 'tok' or 'hrs'. Hours are derived from tokensPerHour when unit='hrs'.",
+  "tokensPerHour": 2200000,
+  "plans": {
+    "pro": {
+      "weeklyTokens": 350000000,
+      "sessionTokens": 12000000,
+      "dailyTargetTokens": 60000000
+    },
+    "max5x": {
+      "weeklyTokens": 1400000000,
+      "sessionTokens": 30000000,
+      "dailyTargetTokens": 220000000
+    },
+    "max20x": {
+      "weeklyTokens": 2600000000,
+      "sessionTokens": 60000000,
+      "dailyTargetTokens": 420000000
+    },
+    "custom": {
+      "weeklyTokens": 1000000000,
+      "sessionTokens": 25000000,
+      "dailyTargetTokens": 150000000
+    }
+  },
+  "unit": "hrs",
+  "thresholds": {
+    "warning": 30,
+    "critical": 12
+  },
+  "burnLevels": {
+    "low": 8000,
+    "moderate": 25000,
+    "high": 60000
+  },
+  "providers": [
+    {
+      "id": "claude-code",
+      "adapter": "claude",
+      "name": "Claude Code",
+      "plan": "max20x"
+    }
+  ],
+  "_providers_note": "Add more AIs here once their adapter.fetch() is implemented, e.g. {id:'cursor',adapter:'cursor',name:'Cursor',plan:'pro'}. The engine renders each as a party member.",
+  "notify": {
+    "enabled": true,
+    "cooldownMinutes": 10,
+    "onWarning": true
+  }
+}

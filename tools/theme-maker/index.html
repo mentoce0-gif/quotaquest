@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QuotaQuest — Theme Maker</title>
+<style>
+  :root{--bg:#0b0b14;--panel:#13131f;--line:#3a3a55;--text:#e6e6eb;--dim:#9a9aae}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif}
+  body{background:radial-gradient(800px 400px at 80% -10%,#1d1438,transparent),var(--bg);color:var(--text);padding:20px;min-height:100vh}
+  h1{font-size:20px;font-weight:800}h1 span{color:#3cd07a}
+  .sub{color:var(--dim);font-size:13px;margin-bottom:18px}
+  .wrap{display:grid;grid-template-columns:300px 1fr;gap:24px;max-width:1000px}
+  @media(max-width:760px){.wrap{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+  label{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;color:var(--dim);margin:9px 0}
+  label input[type=color]{width:40px;height:24px;border:none;border-radius:5px;background:none;cursor:pointer}
+  label input[type=range]{width:120px}
+  .seg{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#7a7a92;margin:14px 0 4px;font-weight:700}
+  .preset{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  .preset button{font-size:11px;padding:5px 9px;border-radius:7px;border:1px solid var(--line);background:#1b1b2a;color:var(--text);cursor:pointer}
+  .preset button:hover{border-color:#3cd07a}
+  .btn{display:block;width:100%;text-align:center;padding:11px;border-radius:10px;font-weight:700;cursor:pointer;border:none;margin-top:8px;font-size:13px}
+  .btn.p{background:linear-gradient(135deg,#3cd07a,#16b35a);color:#06210f}
+  .btn.g{background:#1b1b2a;color:var(--text);border:1px solid var(--line)}
+  /* preview HUD */
+  #hud{border-radius:16px;padding:20px 22px;border:1.5px solid;backdrop-filter:blur(8px)}
+  .htop{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .htitle{font-weight:800;letter-spacing:1px;font-size:15px}
+  .hstat{font-weight:800;font-size:12px;display:flex;gap:7px;align-items:center}
+  .hdot{width:10px;height:10px;border-radius:50%}
+  .brow{display:flex;align-items:center;gap:10px;margin:9px 0}
+  .blab{width:34px;font-size:11px;font-weight:700}
+  .bsub{font-size:9px}
+  .btrack{flex:1;overflow:hidden}
+  .bfill{height:100%}
+  .bval{width:92px;text-align:right;font-size:10px}
+  .hfoot{display:flex;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid;font-size:10px}
+  textarea{width:100%;height:70px;margin-top:10px;background:#0c0c16;color:#8fdcae;border:1px solid var(--line);border-radius:8px;padding:8px;font-family:monospace;font-size:11px}
+  .ok{color:#3cd07a;font-size:11px;height:14px;margin-top:4px}
+</style>
+</head>
+<body>
+  <h1>⚡ Quota<span>Quest</span> · Theme Maker</h1>
+  <div class="sub">Make your own bar style — no code. Pick colors, watch it update, then export to Rainmeter (.inc), JSON, or a share code.</div>
+  <div class="wrap">
+    <!-- controls -->
+    <div class="panel">
+      <div class="preset" id="presets"></div>
+      <div class="seg">Bars</div>
+      <label>HP (normal)<input type="color" id="hp" value="#3cd07a"></label>
+      <label>MP<input type="color" id="mp" value="#50c8e6"></label>
+      <label>EXP<input type="color" id="exp" value="#f0c85a"></label>
+      <label>Regen<input type="color" id="regen" value="#5ad28c"></label>
+      <label>Track (empty)<input type="color" id="track" value="#23232f"></label>
+      <div class="seg">Panel</div>
+      <label>Background<input type="color" id="bg" value="#13131f"></label>
+      <label>Border<input type="color" id="line" value="#3a3a55"></label>
+      <label>Text<input type="color" id="text" value="#e6e6eb"></label>
+      <label>Dim<input type="color" id="dim" value="#9a9aae"></label>
+      <div class="seg">Shape</div>
+      <label>Opacity<input type="range" id="opacity" min="60" max="255" value="210"></label>
+      <label>Bar height<input type="range" id="bh" min="8" max="18" value="13"></label>
+      <label>Bar radius<input type="range" id="br" min="0" max="9" value="6"></label>
+      <label>Name<input type="text" id="name" value="MyTheme" style="width:120px;background:#0c0c16;color:#fff;border:1px solid var(--line);border-radius:5px;padding:3px 6px"></label>
+    </div>
+    <!-- preview + export -->
+    <div>
+      <div class="panel" style="background:transparent;border:none;padding:0;margin-bottom:14px">
+        <div id="hud">
+          <div class="htop"><div class="htitle">⚡ QUOTAQUEST</div>
+            <div class="hstat"><span class="hdot"></span><span id="pstat">NORMAL</span></div></div>
+          <div class="brow"><span class="blab">HP <span class="bsub">wk</span></span><div class="btrack"><div class="bfill" id="bhp"></div></div><span class="bval" id="vhp">63% · 152h</span></div>
+          <div class="brow"><span class="blab">MP <span class="bsub">5h</span></span><div class="btrack"><div class="bfill" id="bmp"></div></div><span class="bval">28% · 1.4h</span></div>
+          <div class="brow"><span class="blab">EXP</span><div class="btrack"><div class="bfill" id="bexp"></div></div><span class="bval">47% target</span></div>
+          <div class="hfoot"><span id="pregen">♻ +166,000 tok/min</span><span>🔥 MODERATE</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <button class="btn p" onclick="dl('inc')">⬇ Export Rainmeter theme (.inc)</button>
+        <button class="btn g" onclick="dl('json')">⬇ Export JSON theme</button>
+        <button class="btn g" onclick="share()">🔗 Copy share code (opens in web HUD)</button>
+        <div class="ok" id="msg"></div>
+        <textarea id="out" readonly placeholder="export preview..."></textarea>
+      </div>
+    </div>
+  </div>
+
+<script>
+const KEYS=['hp','mp','exp','regen','track','bg','line','text','dim'];
+const PRESETS={
+  Default:{hp:'#3cd07a',mp:'#50c8e6',exp:'#f0c85a',regen:'#5ad28c',track:'#23232f',bg:'#13131f',line:'#3a3a55',text:'#e6e6eb',dim:'#9a9aae',opacity:210,bh:13,br:6},
+  Cyberpunk:{hp:'#46f0b4',mp:'#3ce6eb',exp:'#f05ac8',regen:'#46f0b4',track:'#1e1228',bg:'#0a0814',line:'#782c8c',text:'#ebe1f5',dim:'#aa78be',opacity:200,bh:13,br:6},
+  Minimal:{hp:'#a7c4bc',mp:'#96aabe',exp:'#beb496',regen:'#96b4a0',track:'#28282e',bg:'#16161a',line:'#32323a',text:'#ebebee',dim:'#8c8c96',opacity:150,bh:10,br:3},
+  Mana:{hp:'#7ed0ff',mp:'#9b7dff',exp:'#ffd27e',regen:'#7effc4',track:'#181a2a',bg:'#0e1022',line:'#3a3f78',text:'#eef0ff',dim:'#9aa0d0',opacity:220,bh:14,br:7},
+  Arcade:{hp:'#ffd23c',mp:'#ff5ca0',exp:'#5cff8f',regen:'#ffd23c',track:'#221426',bg:'#140a1e',line:'#ff5ca0',text:'#fff0fb',dim:'#d08cbe',opacity:210,bh:14,br:4},
+};
+const $=id=>document.getElementById(id);
+const hex2rgb=h=>{h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];};
+function theme(){const t={};KEYS.forEach(k=>t[k]=$(k).value);t.opacity=+$('opacity').value;t.bh=+$('bh').value;t.br=+$('br').value;t.name=$('name').value||'MyTheme';return t;}
+function apply(){const t=theme();const rgba=(h,a)=>{const[r,g,b]=hex2rgb(h);return `rgba(${r},${g},${b},${a/255})`;};
+  $('hud').style.background=rgba(t.bg,t.opacity);$('hud').style.borderColor=t.line;$('hud').style.color=t.text;
+  $('htitle')&&0;$('pstat').style.color=t.hp;$('hud').querySelector('.hdot').style.background=t.hp;
+  document.querySelectorAll('.htitle').forEach(e=>e.style.color=t.text);
+  document.querySelectorAll('.bsub').forEach(e=>e.style.color=t.dim);
+  document.querySelectorAll('.blab').forEach(e=>e.style.color=t.text);
+  document.querySelectorAll('.bval').forEach(e=>e.style.color=t.dim);
+  document.querySelectorAll('.btrack').forEach(e=>{e.style.background=t.track;e.style.height=t.bh+'px';e.style.borderRadius=t.br+'px';});
+  document.querySelectorAll('.bfill').forEach(e=>e.style.borderRadius=t.br+'px');
+  $('bhp').style.width='63%';$('bhp').style.background=t.hp;
+  $('bmp').style.width='28%';$('bmp').style.background=t.mp;
+  $('bexp').style.width='47%';$('bexp').style.background=t.exp;
+  $('pregen').style.color=t.regen;$('hud').querySelector('.hfoot').style.borderColor=t.line;
+  $('out').value=toINC(t);
+}
+function toINC(t){const C=(h,a)=>{const[r,g,b]=hex2rgb(h);return a!=null?`${r},${g},${b},${a}`:`${r},${g},${b},255`;};
+return `[Variables]\n; ${t.name} — made with QuotaQuest Theme Maker\nColBG=${C(t.bg,t.opacity)}\nColPanelLine=${C(t.line)}\nColText=${C(t.text)}\nColDim=${C(t.dim)}\nColSub=${C(t.dim)}\nColTrack=${C(t.track)}\nColMP=${C(t.mp)}\nColEXP=${C(t.exp)}\nColRegen=${C(t.regen)}\nColHPNormal=${C(t.hp)}\nBarHeight=${t.bh}\nBarRadius=${t.br}\n`;}
+function dl(kind){const t=theme();let data,fn;
+  if(kind==='inc'){data=toINC(t);fn=t.name+'.inc';}
+  else{data=JSON.stringify({schema:'qq-theme/1',...t},null,2);fn=t.name+'.theme.json';}
+  const b=new Blob([data],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fn;a.click();
+  msg('Saved '+fn);$('out').value=data;}
+function share(){const t=theme();const code=btoa(unescape(encodeURIComponent(JSON.stringify({schema:'qq-theme/1',...t}))));
+  const url='../../renderers/web/index.html?theme='+code;
+  navigator.clipboard&&navigator.clipboard.writeText(code);
+  msg('Share code copied. Web HUD: renderers/web/index.html?theme=…');$('out').value=code;}
+function msg(m){$('msg').textContent=m;setTimeout(()=>$('msg').textContent='',4000);}
+// build presets + wire
+Object.keys(PRESETS).forEach(name=>{const b=document.createElement('button');b.textContent=name;b.onclick=()=>{const p=PRESETS[name];Object.keys(p).forEach(k=>{if($(k))$(k).value=p[k];});apply();};$('presets').appendChild(b);});
+document.querySelectorAll('input').forEach(i=>i.addEventListener('input',apply));
+apply();
+</script>
+</body>
+</html>

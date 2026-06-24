@@ -1,0 +1,19 @@
+{
+  "_comment": "Copy to config.json and adjust. Plan caps are user-calibratable because Anthropic/OpenAI report limits in relative terms. Set hpMaxTokens to the token budget you want a full HP bar to represent.",
+  "pollSeconds": 5,
+  "windowMinutes": 300,
+  "outputPath": "../skin/AIEnergyHUD/@Resources/state.json",
+  "primaryAgent": "claude",
+  "agents": {
+    "claude": {
+      "enabled": true,
+      "logDir": "~/.claude/projects",
+      "hpMaxTokens": 500000
+    },
+    "codex": {
+      "enabled": true,
+      "logDir": "~/.codex/sessions",
+      "hpMaxTokens": 500000
+    },
+    "cursor": {
+      "_note": "Cursor/Copilot have no stable local JSONL yet. Until adapt

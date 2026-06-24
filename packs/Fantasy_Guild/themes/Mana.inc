@@ -1,0 +1,12 @@
+[Variables]
+; Mana — QuotaQuest theme (qq-theme/1)
+ColBG=11,14,38,210
+ColPanelLine=74,79,176,255
+ColText=238,240,255,255
+ColDim=160,166,224,255
+ColSub=160,166,224,255
+ColTrack=22,26,58,255
+ColMP=106,208,255,255
+ColEXP=255,210,126,255
+ColRegen=126,255,196,255
+ColHPNormal=155,141,255,255

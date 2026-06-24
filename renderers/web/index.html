@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QuotaQuest — Web renderer</title>
+<style>
+  :root{
+    --bg:#0c0c16; --panel:#13131f; --line:#3a3a55; --text:#e6e6eb; --dim:#9a9aae;
+    --sub:#7a7a92; --track:#23232f; --mp:#50c8e6; --exp:#f0c85a; --regen:#5ad28c;
+    --ok:#3cd07a; --warn:#f0b400; --crit:#eb4646;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:transparent;font-family:'Segoe UI',system-ui,sans-serif;color:var(--text);padding:14px}
+  /* For OBS: body stays transparent; the panel is the overlay. */
+  .panel{width:460px;background:var(--panel);border:1.5px solid var(--line);border-radius:16px;
+    padding:18px 20px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .title{font-weight:800;letter-spacing:1px;font-size:15px}
+  .title small{color:var(--sub);font-weight:600;font-size:10px;margin-left:6px}
+  .status{display:flex;align-items:center;gap:8px;font-weight:800;font-size:12px}
+  .dot{width:10px;height:10px;border-radius:50%}
+  .agg .row{display:flex;align-items:center;gap:10px;margin:7px 0}
+  .lab{width:64px;font-size:10px;font-weight:700;color:var(--dim)}
+  .track{flex:1;height:12px;background:var(--track);border-radius:6px;overflow:hidden}
+  .fill{height:100%;border-radius:6px;width:0;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+  .val{width:96px;text-align:right;font-size:10px;color:var(--dim)}
+  hr{border:none;border-top:1px solid var(--line);margin:12px 0}
+  .member{margin:10px 0}
+  .mhead{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+  .mname{font-weight:700;font-size:12px}
+  .mmodel{color:var(--sub);font-size:9px}
+  .mstat{margin-left:auto;font-weight:700;font-size:9px}
+  .mbars{display:flex;gap:14px;align-items:center;padding-left:18px}
+  .mini{display:flex;align-items:center;gap:6px;flex:1}
+  .mini .k{font-size:9px;color:var(--dim);width:16px}
+  .mini .t{flex:1;height:8px;background:var(--track);border-radius:4px;overflow:hidden}
+  .mini .f{height:100%;border-radius:4px;width:0;transition:width .8s}
+  .mregen{font-size:9px;color:var(--sub);white-space:nowrap}
+  .foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:10px;color:var(--text)}
+  .regen{color:var(--regen);font-size:10px;margin-top:8px}
+  .err{color:var(--warn);font-size:11px}
+  [data-status="WARNING"] .panel{border-color:var(--warn)}
+  [data-status="CRITICAL"] .panel{border-color:var(--crit);animation:pulse 1.1s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(235,70,70,.0)}50%{box-shadow:0 0 0 3px rgba(235,70,70,.35)}}
+</style>
+</head>
+<body data-status="NORMAL">
+  <div class="panel">
+    <div class="top">
+      <div class="title">⚡ QUOTAQUEST<small id="count">· party</small></div>
+      <div class="status"><span class="dot" id="dot"></span><span id="statusTxt">—</span></div>
+    </div>
+    <div class="agg">
+      <div class="row"><span class="lab">PARTY HP</span><div class="track"><div class="fill" id="hp"></div></div><span class="val" id="hpv"></span></div>
+      <div class="row"><span class="lab">PARTY MP</span><div class="track"><div class="fill" id="mp" style="background:var(--mp)"></div></div><span class="val" id="mpv"></span></div>
+      <div class="row"><span class="lab">EXP</span><div class="track"><div class="fill" id="exp" style="background:var(--exp)"></div></div><span class="val" id="expv"></span></div>
+    </div>
+    <div class="regen" id="regen"></div>
+    <hr>
+    <div id="party"></div>
+    <div class="foot"><span id="recovery"></span><span id="burn"></span></div>
+    <div class="err" id="err"></div>
+  </div>
+
+<script>
+  // Configure where state.json is. Same-folder by default; override with ?src=URL.
+  const SRC = new URLSearchParams(location.search).get('src') || 'state.json';
+  // Optional shared theme (from Theme Maker): ?theme=<base64 json>
+  const TCODE = new URLSearchParams(location.search).get('theme');
+  if (TCODE) { try {
+    const t = JSON.parse(decodeURIComponent(escape(atob(TCODE))));
+    const map = { hp:'--ok', mp:'--mp', exp:'--exp', regen:'--regen', bg:'--bg', track:'--track', line:'--line', text:'--text', dim:'--dim' };
+    for (const k in map) if (t[k]) document.documentElement.style.setProperty(map[k], t[k]);
+  } catch (e) {} }
+  const COL = { NORMAL:'var(--ok)', WARNING:'var(--warn)', CRITICAL:'var(--crit)' };
+  const $ = (id) => document.getElementById(id);
+
+  function render(s){
+    $('err').textContent='';
+    document.body.dataset.status = s.status;
+    $('count').textContent = `· ${s.providerCount} AI${s.providerCount>1?'s':''}`;
+    $('dot').style.background = COL[s.status]; $('statusTxt').textContent = s.status; $('statusTxt').style.color = COL[s.status];
+    const hpCol = COL[s.status];
+    $('hp').style.width = s.hp.bar+'%'; $('hp').style.background = hpCol; $('hpv').textContent = s.hp.line;
+    $('mp').style.width = s.mp.bar+'%'; $('mpv').textContent = s.mp.line;
+    $('exp').style.width = s.exp.bar+'%'; $('expv').textContent = s.exp.line;
+    $('regen').textContent = '♻ Regen '+s.regen.line;
+    $('recovery').innerHTML = '⟳ Recovery <b>'+s.recovery.human+'</b> · Full <b>'+s.recovery.fullHuman+'</b>';
+    $('burn').innerHTML = '🔥 Burn <b>'+s.burn.level+'</b>';
+    $('party').innerHTML = s.party.map(m=>`
+      <div class="member">
+        <div class="mhead"><span class="dot" style="background:${COL[m.status]}"></span>
+          <span class="mname">${m.name}</span><span class="mmodel">${m.model}</span>
+          <span class="mstat" style="color:${COL[m.status]}">${m.status}</span></div>
+        <div class="mbars">
+          <div class="mini"><span class="k">HP</span><div class="t"><div class="f" style="width:${m.hp.bar}%;background:${COL[m.status]}"></div></div></div>
+          <div class="mini"><span class="k">MP</span><div class="t"><div class="f" style="width:${m.mp.bar}%;background:var(--mp)"></div></div></div>
+          <span class="mregen">♻ ${m.regen.line}</span>
+        </div>
+      </div>`).join('');
+  }
+
+  async function tick(){
+    try{ const r = await fetch(SRC, {cache:'no-store'}); render(await r.json()); }
+    catch(e){ $('err').textContent = 'state.json not reachable ('+SRC+'). Run the monitor or pass ?src=URL.'; }
+  }
+  tick(); setInterval(tick, 2000);
+</script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuotaQuest — Turn your AI quota into an MMORPG status bar</title>
+<meta name="description" content="HP, MP, EXP and a recovery timer for your Claude Code usage. Always-on-top desktop HUD. Stop reading /usage. Start watching your HP.">
+<style>
+  :root{
+    --bg:#0b0b14; --bg2:#12121e; --panel:rgba(20,20,32,.72); --line:#2c2c44;
+    --text:#e9e9f0; --dim:#9a9ab2; --hp:#3ce07a; --hp2:#16b35a; --mp:#50c8e6;
+    --exp:#f0c85a; --warn:#f0a84a; --crit:#eb4646; --accent:#c96442;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:
+    radial-gradient(1200px 600px at 70% -10%,#1d1438 0%,transparent 60%),
+    radial-gradient(900px 500px at 0% 20%,#102330 0%,transparent 55%),var(--bg);
+    color:var(--text);line-height:1.6;overflow-x:hidden}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  a{color:inherit;text-decoration:none}
+  .btn{display:inline-block;padding:14px 28px;border-radius:12px;font-weight:700;
+    transition:transform .15s,box-shadow .15s;cursor:pointer;border:none;font-size:15px}
+  .btn-primary{background:linear-gradient(135deg,var(--hp),var(--hp2));color:#06210f;
+    box-shadow:0 8px 30px rgba(60,224,122,.3)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 38px rgba(60,224,122,.45)}
+  .btn-ghost{background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--line)}
+  .btn-ghost:hover{background:rgba(255,255,255,.1)}
+  .eyebrow{color:var(--hp);font-weight:700;letter-spacing:2px;font-size:13px;text-transform:uppercase}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);
+    background:rgba(11,11,20,.7);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{font-weight:800;font-size:18px;letter-spacing:.5px}
+  .logo span{color:var(--hp)}
+  .nav-links{display:flex;gap:28px;align-items:center}
+  .nav-links a{color:var(--dim);font-size:14px;font-weight:600}
+  .nav-links a:hover{color:var(--text)}
+  @media(max-width:720px){.nav-links a:not(.btn){display:none}}
+
+  /* hero */
+  .hero{padding:90px 0 70px;display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+  @media(max-width:860px){.hero{grid-template-columns:1fr;text-align:center}}
+  .hero h1{font-size:52px;line-height:1.08;font-weight:800;margin:16px 0;letter-spacing:-1px}
+  .hero h1 em{font-style:normal;background:linear-gradient(135deg,var(--hp),var(--mp));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p.lead{font-size:19px;color:var(--dim);max-width:520px;margin:0 0 28px}
+  @media(max-width:860px){.hero p.lead{margin-inline:auto}}
+  .hero-cta{display:flex;gap:14px;flex-wrap:wrap}
+  @media(max-width:860px){.hero-cta{justify-content:center}}
+  .micro{margin-top:16px;color:var(--dim);font-size:13px}
+
+  /* HUD card */
+  .hud{background:var(--panel);border:1px solid var(--line);border-radius:18px;
+    padding:22px 22px 18px;backdrop-filter:blur(10px);box-shadow:0 30px 80px rgba(0,0,0,.5)}
+  .hud-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+  .hud-title{font-weight:700;font-size:14px;letter-spacing:1px}
+  .status{display:flex;align-items:center;gap:7px;font-weight:700;font-size:12px;color:var(--hp)}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--hp);box-shadow:0 0 10px var(--hp)}
+  .bar-row{display:flex;align-items:center;gap:10px;margin:12px 0}
+  .bar-row .lab{width:34px;font-size:12px;font-weight:700;color:var(--dim)}
+  .track{flex:1;height:13px;background:#20202e;border-radius:7px;overflow:hidden}
+  .fill{height:100%;border-radius:7px;width:0;transition:width 1.4s cubic-bezier(.2,.8,.2,1)}
+  .fill.hp{background:linear-gradient(90deg,var(--hp),var(--hp2))}
+  .fill.mp{background:linear-gradient(90deg,var(--mp),#2f8fd8)}
+  .fill.exp{background:linear-gradient(90deg,var(--exp),#e0a020)}
+  .val{width:104px;text-align:right;font-size:11px;color:var(--dim)}
+  .hud-foot{display:flex;justify-content:space-between;border-top:1px solid var(--line);
+    margin-top:14px;padding-top:12px;font-size:12px;color:#cfcfda}
+  .hud-foot b{color:#fff}
+
+  /* sections */
+  section{padding:70px 0}
+  .sec-head{text-align:center;max-width:640px;margin:0 auto 48px}
+  .sec-head h2{font-size:36px;font-weight:800;letter-spacing:-.5px;margin:10px 0}
+  .sec-head p{color:var(--dim);font-size:17px}
+
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  @media(max-width:860px){.features{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px}
+  .card .ic{font-size:26px;margin-bottom:10px}
+  .card h3{font-size:18px;margin-bottom:8px}
+  .card p{color:var(--dim);font-size:15px}
+
+  /* pricing */
+  .pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:stretch}
+  @media(max-width:860px){.pricing{grid-template-columns:1fr}}
+  .price{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:30px;
+    display:flex;flex-direction:column}
+  .price.pop{border-color:var(--hp);box-shadow:0 0 0 1px var(--hp),0 20px 60px rgba(60,224,122,.18)}
+  .price .tag{font-size:12px;font-weight:700;color:var(--hp);text-transform:uppercase;letter-spacing:1.5px}
+  .price .amt{font-size:42px;font-weight:800;margin:6px 0}
+  .price .amt small{font-size:15px;color:var(--dim);font-weight:600}
+  .price ul{list-style:none;margin:18px 0 24px;flex:1}
+  .price li{padding:7px 0;color:var(--dim);font-size:14px;border-bottom:1px solid rgba(255,255,255,.04)}
+  .price li b{color:var(--text)}
+  .price .btn{width:100%;text-align:center}
+
+  /* faq */
+  .faq{max-width:760px;margin:0 auto}
+  details{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:18px 22px;margin-bottom:12px;cursor:pointer}
+  details[open]{border-color:var(--mp)}
+  summary{font-weight:700;font-size:16px;list-style:none;display:flex;justify-content:space-between}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:'+';color:var(--mp);font-weight:800}
+  details[open] summary::after{content:'−'}
+  details p{color:var(--dim);margin-top:12px;font-size:15px}
+
+  footer{border-top:1px solid var(--line);padding:40px 0;text-align:center;color:var(--dim);font-size:14px}
+  .footer-cta{text-align:center;padding:70px 0 30px}
+  .footer-cta h2{font-size:34px;font-weight:800;margin-bottom:18px}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <div class="logo">⚡ Claude<span>Energy</span>HUD</div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a class="btn btn-primary" href="#pricing" style="padding:9px 18px;font-size:14px">Get it</a>
+  </div>
+</div></nav>
+
+<!-- HERO -->
+<header class="wrap hero">
+  <div>
+    <div class="eyebrow">For Claude Code heavy users · vibe coders · streamers</div>
+    <h1>Turn your AI quota into an <em>MMORPG status bar</em>.</h1>
+    <p class="lead">HP, MP, EXP and a recovery timer for your Claude Code usage —
+      always-on-top, half-transparent, right on your desktop. Stop reading
+      <code>/usage</code>. Start watching your HP.</p>
+    <div class="hero-cta">
+      <a class="btn btn-primary" href="#pricing">Download the HUD</a>
+      <a class="btn btn-ghost" href="#features">See how it works</a>
+    </div>
+    <div class="micro">Windows · Rainmeter · Node.js · 100% local · MIT core</div>
+  </div>
+
+  <!-- live demo HUD -->
+  <div class="hud" id="demoHud">
+    <div class="hud-top">
+      <div class="hud-title">⚡ QUOTAQUEST</div>
+      <div class="status"><span class="dot"></span>NORMAL</div>
+    </div>
+    <div class="bar-row"><span class="lab">HP</span><div class="track"><div class="fill hp" data-w="63"></div></div><span class="val">63% · 152/240h</span></div>
+    <div class="bar-row"><span class="lab">MP</span><div class="track"><div class="fill mp" data-w="28"></div></div><span class="val">28% · 3.6/5.0h</span></div>
+    <div class="bar-row"><span class="lab">EXP</span><div class="track"><div class="fill exp" data-w="47"></div></div><span class="val">47% today</span></div>
+    <div class="hud-foot"><span>⟳ Recovery <b>2h 00m</b></span><span>🔥 Burn <b style="color:var(--warn)">MODERATE</b></span></div>
+  </div>
+</header>
+
+<!-- FEATURES -->
+<section id="features"><div class="wrap">
+  <div class="sec-head">
+    <div class="eyebrow">Why it's different</div>
+    <h2>Quota awareness that's actually fun</h2>
+    <p>Every other monitor looks like a spreadsheet. This one looks like your favorite RPG.</p>
+  </div>
+  <div class="features">
+    <div class="card"><div class="ic">❤️</div><h3>HP = weekly health</h3><p>Your 7-day budget as a health bar. Watch it drain across the week and protect it like real HP.</p></div>
+    <div class="card"><div class="ic">🔵</div><h3>MP = session mana</h3><p>The 5-hour rolling window as mana. Spend it on big agent runs; watch it refill on the recovery timer.</p></div>
+    <div class="card"><div class="ic">⭐</div><h3>EXP = today's grind</h3><p>Today's usage as experience points against a daily target. The grind, gamified.</p></div>
+    <div class="card"><div class="ic">⟳</div><h3>Recovery timer</h3><p>Predicts when your session window frees up — no more guessing when you can resume.</p></div>
+    <div class="card"><div class="ic">🔥</div><h3>Burn rate (DPS)</h3><p>Live consumption speed: LOW · MODERATE · HIGH · EXTREME. Know when you're torching the week.</p></div>
+    <div class="card"><div class="ic">🟢</div><h3>NORMAL / WARNING / CRITICAL</h3><p>Color-coded status turns "am I running low?" from a calculation into a feeling.</p></div>
+    <div class="card"><div class="ic">🪟</div><h3>Always-on-top & glassy</h3><p>Half-transparent, draggable overlay. Park it on a second monitor or in your OBS scene.</p></div>
+    <div class="card"><div class="ic">🔒</div><h3>100% local</h3><p>Reads the logs Claude Code already writes on your machine. No account, no cloud, no telemetry.</p></div>
+    <div class="card"><div class="ic">🎨</div><h3>Rainmeter-native</h3><p>Skinnable and remixable. Themes incoming — make the HUD match your setup.</p></div>
+  </div>
+</div></section>
+
+<!-- PRICING -->
+<section id="pricing" style="background:linear-gradient(180deg,transparent,rgba(255,255,255,.02))"><div class="wrap">
+  <div class="sec-head">
+    <div class="eyebrow">Pricing</div>
+    <h2>Free to start. Pay if you love it.</h2>
+    <p>The core HUD is open-source. Pro themes and the multi-tool pack fund development.</p>
+  </div>
+  <div class="pricing">
+    <div class="price">
+      <div class="tag">Open Source</div>
+      <div class="amt">$0</div>
+      <ul>
+        <li><b>Core HUD</b> — HP / MP / EXP</li>
+        <li>Recovery timer + burn rate</li>
+        <li>NORMAL / WARNING / CRITICAL</li>
+        <li>Claude Code support</li>
+        <li>Default theme · MIT license</li>
+      </ul>
+      <a class="btn btn-ghost" href="#">Download free</a>
+    </div>
+    <div class="price pop">
+      <div class="tag">Pro · most popular</div>
+      <div class="amt">$12 <small>one-time</small></div>
+      <ul>
+        <li><b>Everything in Free</b></li>
+        <li>5 premium themes (Cyberpunk, FF-classic, Minimal…)</li>
+        <li>Live ticking recovery countdown</li>
+        <li>WARNING pulse · CRITICAL blink + sound</li>
+        <li>Priority support · lifetime updates</li>
+      </ul>
+      <a class="btn btn-primary" href="#">Get Pro — $12</a>
+    </div>
+    <div class="price">
+      <div class="tag">Multi-Tool</div>
+      <div class="amt">$24 <small>one-time</small></div>
+      <ul>
+        <li><b>Everything in Pro</b></li>
+        <li>Cursor adapter</li>
+        <li>GitHub Copilot credits adapter</li>
+        <li>Windsurf adapter</li>
+        <li>Streamer kit (transparent OBS source)</li>
+      </ul>
+      <a class="btn btn-ghost" href="#">Get Multi-Tool — $24</a>
+    </div>
+  </div>
+  <p class="micro" style="text-align:center;margin-top:20px">Prices indicative for launch. Team/site licenses available.</p>
+</div></section>
+
+<!-- FAQ -->
+<section id="faq"><div class="wrap">
+  <div class="sec-head"><div class="eyebrow">FAQ</div><h2>Questions, answered</h2></div>
+  <div class="faq">
+    <details open><summary>Does this send my data anywhere?</summary><p>No. It reads the usage logs Claude Code already writes locally (under <code>~/.claude</code>) and writes one small <code>state.json</code> on your machine. Nothing leaves your computer — no account, no cloud, no telemetry.</p></details>
+    <details><summary>How does it know my limits?</summary><p>It aggregates your token usage over the 5-hour and 7-day windows and compares against your plan's caps in <code>config.json</code>. Anthropic's exact numbers aren't public, so the caps are sensible defaults you can calibrate to your real plan in one edit.</p></details>
+    <details><summary>Do I need Rainmeter?</summary><p>Yes, for the desktop HUD on Windows — it's a free, lightweight customization tool. The installer drops the skin straight into your Rainmeter folder. A cross-platform Electron/Tauri build is on the roadmap.</p></details>
+    <details><summary>Will it work with Cursor / Copilot / Windsurf?</summary><p>Claude Code is supported today. Cursor, Copilot and Windsurf adapters ship in the Multi-Tool pack — they all expose depletable budgets, so the same HP/MP model applies.</p></details>
+    <details><summary>Is it really free?</summary><p>The core HUD is open-source (MIT). Pro themes, animated status effects, and the multi-tool/streamer packs are paid and fund ongoing development.</p></details>
+    <details><summary>Will it slow down my machine?</summary><p>No. The monitor polls on an interval (30s by default) and the skin reads one local file. Idle CPU is essentially zero and memory use is tiny.</p></details>
+    <details><summary>I'm a streamer — can I put this on screen?</summary><p>That's a core use case. It's always-on-top and half-transparent, so it drops into OBS as-is. The Multi-Tool pack adds a transparent-background source built for streams.</p></details>
+  </div>
+</div></section>
+
+<!-- FOOTER CTA -->
+<section class="footer-cta"><div class="wrap">
+  <h2>Don't die mid-prompt.</h2>
+  <a class="btn btn-primary" href="#pricing">Download QuotaQuest</a>
+</div></section>
+
+<footer><div class="wrap">
+  ⚡ QuotaQuest · MIT core · Built for the people who actually hit the limits.<br>
+  <span style="opacity:.6">QuotaQuest is an independent project, not affiliated with, sponsored by, or endorsed by Anthropic. "Claude" and "Claude Code" are trademarks of Anthropic, PBC. "Rainmeter" is a trademark of its respective owner. Used nominatively for compatibility.</span>
+</div></footer>
+
+<script>
+  // animate bars when hero is in view
+  window.addEventListener('load',()=>{
+    document.querySelectorAll('.fill').forEach(f=>{ f.style.width=f.dataset.w+'%'; });
+  });
+</script>
+</body>
+</html>

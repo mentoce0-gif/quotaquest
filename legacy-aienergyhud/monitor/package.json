@@ -1,0 +1,15 @@
+{
+  "name": "ai-energy-hud-monitor",
+  "version": "1.0.0",
+  "description": "Reads local Claude Code / Codex usage logs and writes state.json for the AI Energy HUD Rainmeter skin.",
+  "type": "commonjs",
+  "main": "index.js",
+  "bin": {
+    "ai-energy-hud": "index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "once": "node index.js --once",
+    "mock": "node index.js --mock",
+    "bundle": "esbuild index.js --bundle --platform=node --outfile=dist/bundle.js",
+  

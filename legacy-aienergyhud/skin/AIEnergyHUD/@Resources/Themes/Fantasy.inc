@@ -1,0 +1,23 @@
+[Variables]
+; ===== Theme: Fantasy (FF-style) =====
+BgColor=20,16,34,215
+PanelColor=34,26,54,238
+StrokeColor=150,120,70,255
+TextColor=245,238,220,255
+DimColor=190,170,140,255
+AccentColor=235,200,120,255
+HPColorNormal=120,220,140,255
+HPColorWarning=240,200,90,255
+HPColorCritical=230,80,90,255
+MPColor=150,140,255,255
+BarBgColor=58,48,78,255
+StatNormal=120,220,140,255
+StatWarning=240,200,90,255
+StatCritical=230,80,90,255
+StatUnknown=235,150,80,255
+FontFace=Georgia
+FontFaceMono=Consolas
+FontHeader=22
+FontLabel=13
+FontValue=15
+FontSmall=11

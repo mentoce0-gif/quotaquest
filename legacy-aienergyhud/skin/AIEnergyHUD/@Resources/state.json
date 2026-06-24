@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "updated": "2026-06-24T09:00:00Z",
+  "status": "NORMAL",
+  "model": "Claude Sonnet 4.6",
+  "primary_agent": "claude",
+  "hp_percent": 87,
+  "hp_current": 435000,
+  "hp_max": 500000,
+  "mp_percent": 63,
+  "mp_minutes": 189,
+  "mp_max_minutes": 300,
+  "regen_per_min": 2140,
+  "burn_per_hour": 12400,
+  "recovery": "01:52:18",
+  "exp_today": 1820000,
+  "exp_week": 8730000,
+  "exp_month": 32410000,
+  "claude_hp_percent": 87,
+  "claude_status": "NORMAL",
+  "codex_hp_percent": 54,
+  "codex_status": "WARNING"
+}

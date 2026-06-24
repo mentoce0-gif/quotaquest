@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 2,
+  "updatedAt": "2026-06-23T09:41:00Z",
+  "engine": "energyhud",
+  "providerCount": 2,
+  "status": "WARNING",
+  "hp": { "bar": 52, "line": "52% · 1.4Mh left", "label": "PARTY HP", "percent": 52, "remaining": 1.4, "max": 2.7, "unit": "hrs" },
+  "mp": { "bar": 33, "line": "33% · 5.1h left", "label": "PARTY MP", "percent": 33, "remaining": 5.1, "max": 15.4, "unit": "hrs" },
+  "exp": { "bar": 57, "line": "57% of target", "label": "TODAY" },
+  "regen": { "tokensPerMin": 166000, "line": "+166,000 tok/min" },
+  "recovery": { "human": "2h 00m", "secondsRemaining": 7200, "fullHuman": "4h 58m" },
+  "burn": { "tokensPerMin": 18250, "level": "MODERATE" },
+  "party": [
+    {
+      "id": "claude-code", "name": "Claude Code", "model": "claude-sonnet", "source": "demo", "status": "NORMAL",
+      "hp": { "bar": 63, "line": "63% · 152h left", "label": "WEEKLY", "percent": 63, "used": 88, "remaining": 152, "max": 240, "unit": "hrs" },
+      "mp": { "bar": 30, "line": "30% · 1.5h left", "label": "SESSION", "percent": 30, "used": 3.5, "remaining": 1.5, "max": 5, "unit": "hrs" },
+      "exp": { "bar": 47, "line": "47% of target", "label": "TODAY", "tokens": 8420000, "costUsd": 14.92 },
+      "regen": { "tokensPerMin": 140500, "line": "+140,500 tok/min" },
+      "burn": { "tokensPerMin": 18250, "usdPerHour": 3.10, "level": "MODERATE" },
+      "recovery": { "human": "2h 00m", "secondsRemaining": 7200, "fullHuman": "4h 58m", "fullSecondsRemaining": 17880, "weeklyHuman": "4d 14h" }
+    },
+    {
+      "id": "cursor", "name": "Cursor", "model": "cursor", "source": "demo", "status": "WARNING",
+      "hp": { "bar": 24, "line": "24% · 58h left", "label": "WEEKLY", "percent": 24, "used": 182, "remaining": 58, "max": 240, "unit": "hrs" },
+      "mp": { "bar": 38, "line": "38% · 1.9h left", "label": "SESSION", "percent": 38, "used": 3.1, "remaining": 1.9, "max": 5, "unit": "hrs" },
+      "exp": { "bar": 68, "line": "68% of target", "label": "TODAY", "tokens": 12100000, "costUsd": 21.40 },
+      "regen": { "tokensPerMin": 25500, "line": "+25,500 tok/min" },
+      "burn": { "tokensPerMin": 41000, "usdPerHour": 6.20, "level": "HIGH" },
+      "recovery": { "human": "1h 12m", "secondsRemaining": 4320, "fullHuman": "3h 40m", "fullSecondsRemaining": 13200, "weeklyHuman": "4d 14h" }
+    }
+  ],
+  "aggregate": {
+    "status": "WARNING",
+    "hp": { "bar": 52, "line": "52% · 1.4Mh left", "label": "PARTY HP", "percent": 52, "remaining": 1.4, "max": 2.7, "unit": "hrs" },
+    "mp": { "bar": 33, "line": "33% · 5.1h left", "label": "PARTY MP", "percent": 33, "remaining": 5.1, "max": 15.4, "unit": "hrs" },
+    "exp": { "bar": 57, "line": "57% of target", "label": "TODAY" },
+    "regen": { "tokensPerMin": 166000, "line": "+166,000 tok/min" },
+    "burn": { "tokensPerMin": 59250, "level": "HIGH" },
+    "recovery": { "human": "1h 12m", "secondsRemaining": 4320, "fullHuman": "4h 58m" }
+  },
+  "thresholds": { "warning": 30, "critical": 12 }
+}

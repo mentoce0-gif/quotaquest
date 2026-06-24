@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Energy HUD — AI Usage, Gamified.</title>
+<meta name="description" content="An MMORPG-style desktop HUD that turns your Claude Code & Codex usage into HP/MP bars. Always-on-top, Windows-native, local-only.">
+<style>
+  :root{
+    --bg:#0a0e1a; --panel:#121829; --stroke:#2a3550; --text:#e6edff; --dim:#93a3c4;
+    --accent:#78b4ff; --hp:#39ff14; --hp2:#1fa30a; --mp:#409cff; --warn:#ffd400; --crit:#ff3b3b;
+    --radius:16px; --maxw:1080px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:
+    radial-gradient(1200px 600px at 70% -10%, #1a2542 0, transparent 60%),
+    radial-gradient(900px 500px at 10% 0%, #15203a 0, transparent 55%), var(--bg);
+    color:var(--text);line-height:1.6;overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .btn{display:inline-block;padding:14px 28px;border-radius:12px;font-weight:700;cursor:pointer;border:1px solid transparent;transition:.2s}
+  .btn-primary{background:linear-gradient(135deg,var(--hp),var(--hp2));color:#062b00;box-shadow:0 0 24px rgba(57,255,20,.35)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 36px rgba(57,255,20,.55)}
+  .btn-ghost{border-color:var(--stroke);color:var(--text)}
+  .btn-ghost:hover{border-color:var(--accent)}
+  .tag{display:inline-block;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);
+    border:1px solid var(--stroke);border-radius:999px;padding:6px 14px;margin-bottom:20px;background:rgba(120,180,255,.06)}
+
+  /* HERO */
+  header{padding:90px 0 60px;text-align:center}
+  h1{font-size:clamp(38px,6vw,68px);line-height:1.05;letter-spacing:-.02em;margin-bottom:18px}
+  h1 .grad{background:linear-gradient(120deg,#39ff14,#78b4ff,#409cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:clamp(17px,2.3vw,22px);color:var(--dim);max-width:680px;margin:0 auto 34px}
+  .cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+  .note{margin-top:16px;color:var(--dim);font-size:14px}
+
+  /* HUD MOCK */
+  .hud{max-width:520px;margin:54px auto 0;background:linear-gradient(180deg,#101627,#0c1120);
+    border:1px solid var(--stroke);border-radius:var(--radius);padding:22px 24px;
+    box-shadow:0 30px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.04);text-align:left}
+  .hud .row{display:flex;align-items:center;gap:12px;margin:10px 0}
+  .hud .lbl{width:34px;font-weight:800;color:var(--dim)}
+  .bar{flex:1;height:18px;border-radius:9px;background:#232c44;overflow:hidden;position:relative}
+  .bar > i{display:block;height:100%;border-radius:9px}
+  .fill-hp{width:87%;background:linear-gradient(90deg,#1fa30a,#39ff14);box-shadow:0 0 14px rgba(57,255,20,.5)}
+  .fill-mp{width:63%;background:linear-gradient(90deg,#1c5fb0,#409cff);box-shadow:0 0 14px rgba(64,156,255,.5)}
+  .pct{width:48px;text-align:right;font-family:Consolas,monospace;font-weight:700}
+  .hud .meta{display:flex;justify-content:space-between;color:var(--dim);font-size:13px;margin-top:4px}
+  .hud .stats{display:flex;justify-content:space-between;margin-top:16px;font-size:13px;color:var(--text);
+    border-top:1px solid var(--stroke);padding-top:14px;flex-wrap:wrap;gap:8px}
+  .hud .party{margin-top:14px;font-size:12px;color:var(--dim);display:flex;gap:18px;flex-wrap:wrap}
+  .chip{color:var(--hp);font-weight:700}.chip.warn{color:var(--warn)}
+  .hud .title{display:flex;justify-content:space-between;color:var(--accent);font-weight:700;font-size:13px;letter-spacing:.08em;margin-bottom:8px}
+  .online{color:var(--hp)}
+
+  /* SECTIONS */
+  section{padding:72px 0;border-top:1px solid rgba(42,53,80,.5)}
+  h2{font-size:clamp(28px,4vw,42px);text-align:center;margin-bottom:12px;letter-spacing:-.01em}
+  .lead{text-align:center;color:var(--dim);max-width:680px;margin:0 auto 48px;font-size:18px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+  .card{background:var(--panel);border:1px solid var(--stroke);border-radius:var(--radius);padding:26px;transition:.2s}
+  .card:hover{border-color:var(--accent);transform:translateY(-3px)}
+  .card .ico{font-size:28px;margin-bottom:12px}
+  .card h3{font-size:19px;margin-bottom:8px}
+  .card p{color:var(--dim);font-size:15px}
+  .pill{display:inline-block;font-size:12px;color:var(--warn);border:1px solid rgba(255,212,0,.4);
+    border-radius:999px;padding:2px 10px;margin-left:8px;vertical-align:middle}
+
+  /* PRICING */
+  .price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;align-items:stretch}
+  .plan{background:var(--panel);border:1px solid var(--stroke);border-radius:var(--radius);padding:30px 26px;display:flex;flex-direction:column}
+  .plan.feat{border-color:var(--hp);box-shadow:0 0 30px rgba(57,255,20,.18);position:relative}
+  .plan.feat::before{content:'POPULAR';position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+    background:var(--hp);color:#062b00;font-size:11px;font-weight:800;letter-spacing:.1em;padding:4px 12px;border-radius:999px}
+  .plan h3{font-size:18px;letter-spacing:.04em;text-transform:uppercase;color:var(--dim)}
+  .plan .amt{font-size:40px;font-weight:800;margin:10px 0}
+  .plan .amt small{font-size:15px;color:var(--dim);font-weight:500}
+  .plan ul{list-style:none;margin:18px 0 24px;flex:1}
+  .plan li{padding:7px 0;color:var(--dim);font-size:15px;border-bottom:1px dashed rgba(42,53,80,.6)}
+  .plan li::before{content:'✓ ';color:var(--hp);font-weight:800}
+
+  /* FAQ */
+  details{background:var(--panel);border:1px solid var(--stroke);border-radius:12px;padding:18px 22px;margin-bottom:14px}
+  details[open]{border-color:var(--accent)}
+  summary{cursor:pointer;font-weight:700;font-size:17px;list-style:none;display:flex;justify-content:space-between}
+  summary::after{content:'+';color:var(--accent);font-size:22px;line-height:1}
+  details[open] summary::after{content:'–'}
+  details p{color:var(--dim);margin-top:12px}
+
+  footer{padding:50px 0;text-align:center;color:var(--dim);font-size:14px;border-top:1px solid rgba(42,53,80,.5)}
+  .footer-cta{margin:0 auto 30px;text-align:center}
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<header>
+  <div class="wrap">
+    <span class="tag">⚡ Rainmeter · Windows · Local-only</span>
+    <h1>Your AI budget,<br><span class="grad">as an HP bar.</span></h1>
+    <p class="sub">AI Energy HUD turns Claude Code &amp; Codex usage into an MMORPG-style overlay — always on top, semi-transparent, so you <em>feel</em> your remaining energy instead of running a command to check.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="#pricing">Get the HUD</a>
+      <a class="btn btn-ghost" href="https://github.com/151Me/ai-energy-hud" target="_blank" rel="noopener">★ Star on GitHub</a>
+    </div>
+    <div class="note">Free &amp; open-source core · No API keys · No telemetry</div>
+
+    <!-- HUD mock -->
+    <div class="hud">
+      <div class="title"><span>◆ AI ENERGY HUD v1.0</span><span class="online">● ONLINE</span></div>
+      <div class="row"><span class="lbl">HP</span><span class="bar"><i class="fill-hp"></i></span><span class="pct">87%</span></div>
+      <div class="meta"><span>♥ 425,362 / 500,000 tokens</span><span>Claude Sonnet 4.6</span></div>
+      <div class="row"><span class="lbl">MP</span><span class="bar"><i class="fill-mp"></i></span><span class="pct">63%</span></div>
+      <div class="meta"><span>⏻ session 186 / 300 min</span><span>STATUS NORMAL</span></div>
+      <div class="stats">
+        <span>↻ REGEN +2,140/min</span><span>⏳ 01:52:18</span><span>🔥 BURN 12.4k/h</span>
+      </div>
+      <div class="party">
+        <span>PARTY</span>
+        <span>CLAUDE <span class="chip">87% NORMAL</span></span>
+        <span>CODEX <span class="chip warn">54% WARNING</span></span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ FEATURES ============ -->
+<section id="features">
+  <div class="wrap">
+    <h2>Stop guessing. Start seeing.</h2>
+    <p class="lead">Every major AI tool moved to opaque token billing in 2026. AI Energy HUD makes the invisible visible.</p>
+    <div class="grid">
+      <div class="card"><div class="ico">❤️</div><h3>HP &amp; MP at a glance</h3><p>Remaining budget and your 5-hour session window as live gauges that shift green → yellow → red as you burn down.</p></div>
+      <div class="card"><div class="ico">🛡️</div><h3>Party HP <span class="pill">new</span></h3><p>Claude and Codex side-by-side like RPG party members. Instantly spot which agent is <strong>silently</strong> draining your weekly quota.</p></div>
+      <div class="card"><div class="ico">⏳</div><h3>Recovery &amp; Burn Rate</h3><p>See tokens regenerating per minute, an ETA to full, and your real-time consumption speed — no command needed.</p></div>
+      <div class="card"><div class="ico">📌</div><h3>Always-on overlay</h3><p>Semi-transparent, always-on-top, draggable. Lives at the edge of your editor and drops straight onto an OBS stream.</p></div>
+      <div class="card"><div class="ico">🔒</div><h3>Local &amp; private</h3><p>Reads the same local JSONL logs as ccusage. No API keys, no network calls, no telemetry. Ever.</p></div>
+      <div class="card"><div class="ico">🎨</div><h3>Themeable</h3><p>Cyberpunk, FF-style fantasy, minimal, terminal, mascot, radial gauge — reskin without touching the data.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GALLERY ============ -->
+<section id="themes">
+  <div class="wrap">
+    <h2>Six themes, one right-click away</h2>
+    <p class="lead">Cyberpunk, Fantasy, Minimal, Terminal, Mascot, Radial — same data, your vibe.</p>
+    <img src="assets/themes_grid.png" alt="AI Energy HUD theme variations"
+         style="width:100%;border-radius:var(--radius);border:1px solid var(--stroke);box-shadow:0 24px 60px rgba(0,0,0,.5)">
+    <p class="lead" style="margin:38px auto 16px">Streaming? Drop the compact overlay onto your OBS scene:</p>
+    <img src="assets/hud_compact.png" alt="AI Energy HUD compact OBS overlay"
+         style="width:100%;max-width:680px;display:block;margin:0 auto;border-radius:12px;border:1px solid var(--stroke)">
+  </div>
+</section>
+
+<!-- ============ PRICING ============ -->
+<section id="pricing">
+  <div class="wrap">
+    <h2>Pricing</h2>
+    <p class="lead">Start free. Upgrade when you want themes, multi-device sync, and team views.</p>
+    <div class="price-grid">
+      <div class="plan">
+        <h3>Free</h3>
+        <div class="amt">$0</div>
+        <ul><li>Core HP / MP HUD</li><li>Claude + Codex party</li><li>All 6 themes + switcher</li><li>.rmskin one-click install</li><li>Local-only, open-source</li></ul>
+        <a class="btn btn-ghost" href="https://github.com/151Me/ai-energy-hud/releases/latest" target="_blank" rel="noopener">Download</a>
+      </div>
+      <div class="plan feat">
+        <h3>Pro</h3>
+        <div class="amt">$12<small> one-time</small></div>
+        <ul><li>Cursor &amp; Copilot adapters</li><li>Premium theme pack + builder</li><li>OBS compact overlay</li><li>Desktop alerts (WARNING/CRITICAL)</li><li>Priority updates</li></ul>
+        <a class="btn btn-primary" href="https://github.com/151Me/ai-energy-hud/releases/latest">Get Pro (Gumroad)</a>
+      </div>
+      <div class="plan">
+        <h3>Premium</h3>
+        <div class="amt">$29<small>/yr</small></div>
+        <ul><li>Everything in Pro</li><li>Cloud sync, multi-device</li><li>Custom theme builder</li><li>Priority updates</li></ul>
+        <a class="btn btn-ghost" href="https://github.com/151Me/ai-energy-hud">Subscribe</a>
+      </div>
+      <div class="plan">
+        <h3>Team</h3>
+        <div class="amt">$9<small>/seat/mo</small></div>
+        <ul><li>Shared party dashboard</li><li>Team burn analytics</li><li>Admin &amp; SSO</li><li>Slack alerts</li></ul>
+        <a class="btn btn-ghost" href="https://x.com/151Me" target="_blank" rel="noopener">Contact us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq">
+  <div class="wrap" style="max-width:760px">
+    <h2>FAQ</h2>
+    <p class="lead">The honest answers.</p>
+    <details open><summary>Does it need my API key or send data anywhere?</summary><p>No. It only <strong>reads</strong> the local JSONL usage logs that Claude Code and Codex already write to your disk (<code>~/.claude</code>, <code>~/.codex</code>), computes the gauges locally, and writes a small <code>state.json</code> the skin renders. Zero network calls, zero telemetry.</p></details>
+    <details><summary>How is this different from ccusage / TokenTracker?</summary><p>Those are excellent CLIs / dashboards / a macOS menu-bar app. AI Energy HUD is the only <strong>Windows, always-on, gamified desktop overlay</strong> with multi-agent <em>party HP</em>. It complements ccusage — you can run both.</p></details>
+    <details><summary>The limits aren't exact tokens — does the HUD still work?</summary><p>Yes. Anthropic/OpenAI report limits relatively, so you set <code>hpMaxTokens</code> to the budget a full bar should represent. It's intentionally calibratable so a vendor wording change never breaks it.</p></details>
+    <details><summary>What's "Party HP" really for?</summary><p>Codex has a known issue where background tokens are misclassified as "Other" and silently drain your weekly cap. Watching one tool's screen won't catch it — a party view of all your agents will. Unknown token data shows as <code>?? UNKNOWN</code> rather than a false-safe full bar.</p></details>
+    <details><summary>Do I need to be a Rainmeter expert?</summary><p>No. Run <code>install.bat</code> — it copies the skin, seeds the config, and starts the monitor. Drag the HUD where you like; right-click for options.</p></details>
+    <details><summary>Mac / Linux?</summary><p>v1.0 is Windows-first (Rainmeter). A cross-platform companion is on the roadmap. macOS users today are well served by TokenTracker.</p></details>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-cta">
+    <a class="btn btn-primary" href="#pricing">Get AI Energy HUD</a>
+  </div>
+  <div class="wrap">
+    <strong>AI Energy HUD</strong> — AI Usage, Gamified. · MIT licensed core<br>
+    Made for everyone who's watched their AI budget vanish without warning.
+  </div>
+</footer>
+
+</body>
+</html>
