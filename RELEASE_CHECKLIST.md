@@ -16,7 +16,7 @@
 
 ## Publish to GitHub
 - [ ] `git init` done (initial commit created in this build) — set your remote:
-      `git remote add origin https://github.com/<you>/quotaquest.git`
+      `git remote add origin https://github.com/ mentoce0-gif/quotaquest.git`
 - [ ] `git push -u origin main`
 - [ ] Set repo **Description** + **Topics** from `GITHUB_METADATA.md`
 - [ ] Upload `assets/gallery.png` as the Social preview (Settings → Social preview)

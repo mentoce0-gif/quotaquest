@@ -8,7 +8,7 @@
 **Title:**
 Show HN: QuotaQuest – your AI usage as an MMORPG HP/MP bar
 
-**URL:** https://github.com/you/quotaquest
+**URL:** https://github.com/mentoce0-gif/quotaquest
 
 ---
 

@@ -11,7 +11,7 @@
 3. 終わると以下が完了します：
    - リポジトリ作成 + push（**初回コミット＝公開日の記録**）
    - Description / Topics 設定
-   - GitHub Pages 有効化 → `https://<you>.github.io/quotaquest/landing-page.html`
+   - GitHub Pages 有効化 → `https:// mentoce0-gif.github.io/quotaquest/landing-page.html`
    - Release **v0.1.0** 作成 + dist zip 添付
 
 ## gh CLI を使わない手動ルート
@@ -21,7 +21,7 @@
    git init && git add -A
    git commit -m "v0.1.0 — QuotaQuest MVP"
    git branch -M main
-   git remote add origin https://github.com/<you>/quotaquest.git
+   git remote add origin https://github.com/ mentoce0-gif/quotaquest.git
    git push -u origin main
    ```
 3. リポジトリの **About**（右上の歯車）→ Description と Topics を `GITHUB_METADATA.md` から貼付。

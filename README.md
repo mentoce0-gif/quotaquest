@@ -82,7 +82,7 @@ Data sources (auto-detected, in order): **ccusage** â†’ **direct JSONL parse** â
 
 ```powershell
 # 1. Clone
-git clone https://github.com/you/quotaquest.git
+git clone https://github.com/mentoce0-gif/quotaquest.git
 cd quotaquest
 
 # 2. Install (copies the skin into Rainmeter, points the monitor at it)

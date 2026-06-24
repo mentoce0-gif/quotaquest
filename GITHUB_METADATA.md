@@ -7,7 +7,7 @@
 > ⚡ Turn your AI quota into an MMORPG status bar. A half-transparent, always-on-top desktop HUD that shows your Claude Code usage as HP / MP / EXP with a recovery timer and burn rate. 100% local, MIT core.
 
 ## Website
-`https://<your-username>.github.io/quotaquest/landing-page.html`
+`https:// mentoce0-gif.github.io/quotaquest/landing-page.html`
 
 ## Topics (tags)
 ```

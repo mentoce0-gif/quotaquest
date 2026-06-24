@@ -26,9 +26,9 @@ scripts\start-monitor-demo.bat        REM まずデモデータで表示確認
 powershell -ExecutionPolicy Bypass -File scripts\publish-github.ps1 -Repo quotaquest
 ```
 自動で：git init+コミット / リポジトリ作成+push / Description+Topics / Pages有効化 / Release v0.1.0+zip添付
-- [ ] `https://github.com/<you>/quotaquest` が表示される
+- [ ] `https://github.com/ mentoce0-gif/quotaquest` が表示される
 - [ ] Social preview に `assets\gallery.png` をアップ（Settings → Social preview）
-- [ ] Pages が有効か確認（`https://<you>.github.io/quotaquest/landing-page.html`）
+- [ ] Pages が有効か確認（`https:// mentoce0-gif.github.io/quotaquest/landing-page.html`）
 
 ## 3. ブランド資産の確保（任意・10分）  → `docs/BRAND_ASSETS.md`
 - [ ] ドメイン（quotaquest.com など）空き確認・取得
