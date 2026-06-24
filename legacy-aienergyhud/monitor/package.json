@@ -12,4 +12,14 @@
     "once": "node index.js --once",
     "mock": "node index.js --mock",
     "bundle": "esbuild index.js --bundle --platform=node --outfile=dist/bundle.js",
-  
+    "sea": "node --experimental-sea-config sea-config.json"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "devDependencies": {
+    "esbuild": "^0.23.0"
+  },
+  "dependencies": {},
+  "license": "MIT"
+}

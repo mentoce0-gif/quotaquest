@@ -1,6 +1,6 @@
 {
   "name": "quotaquest-monitor",
-  "version": "0.1.0",
+  "version": "0.6.0",
   "description": "Reads local Claude Code usage and writes state.json for the QuotaQuest Rainmeter skin.",
   "bin": { "quotaquest": "index.js" },
   "main": "index.js",

@@ -16,4 +16,25 @@
       "hpMaxTokens": 500000
     },
     "cursor": {
-      "_note": "Cursor/Copilot have no stable local JSONL yet. Until adapt
+      "_note": "Cursor/Copilot have no stable local JSONL yet. Until adapters land, set manualPercent (0-100) to show them in the party, or point logDir at a future export.",
+      "enabled": false,
+      "manualPercent": 80,
+      "hpMaxTokens": 500000
+    },
+    "copilot": {
+      "enabled": false,
+      "manualPercent": 65,
+      "hpMaxTokens": 500000
+    }
+  },
+  "thresholds": {
+    "warningBelowPercent": 40,
+    "criticalBelowPercent": 15
+  },
+  "notify": {
+    "_note": "Edge-triggered desktop notifications when status worsens. Windows tray balloon / macOS / Linux notify-send.",
+    "enabled": true,
+    "onWarning": true,
+    "cooldownMinutes": 10
+  }
+}

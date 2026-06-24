@@ -84,4 +84,12 @@ function maybeNotify(state, cfg) {
   const title = `AI Energy HUD — ${level}`;
   const msg = level === 'CRITICAL'
     ? `HP ${state.hp_percent}% — almost out. Recovery in ${state.recovery}.`
-    : `HP ${state.
+    : `HP ${state.hp_percent}% — running low. Recovery in ${state.recovery}.`;
+  dispatch(title, msg, level);
+  console.log(`[notify] ${level} fired (HP ${state.hp_percent}%)`);
+}
+
+// test helper
+function _reset() { lastRank = 0; lastFiredAt = 0; }
+
+module.exports = { maybeNotify, _reset };

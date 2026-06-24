@@ -122,4 +122,4 @@ for i,(im,(n,_,_,_)) in enumerate(zip(thumbs,samples)):
 gd.text((gap, rows*th+(rows+1)*gap+6), "AI Energy HUD — 6 themes (right-click to switch)",
         font=BOLD(14), fill=(150,180,230))
 grid.save(os.path.join(OUT,"themes_grid.png"))
-pri
+print("wrote PNGs to", OUT)

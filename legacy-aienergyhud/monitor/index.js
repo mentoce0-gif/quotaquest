@@ -82,4 +82,33 @@ function realState(cfg) {
       thresholds: cfg.thresholds,
       hasUnknown, missing,
     });
-    out[
+    out[name].model = name === cfg.primaryAgent ? (cfg.modelLabel || name) : name;
+  }
+  return out;
+}
+
+function tick(cfg, outPath) {
+  try {
+    const agents = has('--mock') ? mockState(cfg) : realState(cfg);
+    const state = buildState(cfg.primaryAgent, agents);
+    maybeNotify(state, cfg);
+    const written = writeState(outPath, state);
+    const tag = has('--mock') ? 'mock' : 'live';
+    console.log(`[${new Date().toLocaleTimeString()}] (${tag}) HP ${state.hp_percent}% ` +
+      `MP ${state.mp_percent}% ${state.status} -> ${path.basename(written)}`);
+  } catch (e) {
+    console.error(`[tick] ${e.message}`);
+  }
+}
+
+function main() {
+  const cfg = loadConfig();
+  const outPath = path.resolve(__dirname, cfg.outputPath);
+  console.log(`AI Energy HUD monitor — writing ${outPath}`);
+  tick(cfg, outPath);
+  if (has('--once')) return;
+  const ms = Math.max(1, cfg.pollSeconds || 5) * 1000;
+  setInterval(() => tick(cfg, outPath), ms);
+}
+
+main();
